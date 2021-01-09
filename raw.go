@@ -5,19 +5,19 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/memo012/morm/log"
 	"strings"
-
 )
 
 // session类 旨于与数据库进行交互
 
 type Session struct {
 	// 数据库引擎
-	db *sql.DB
-	// SQL语句
-	sql strings.Builder
-	tx *sql.Tx
+	db     *sql.DB
+	tx     *sql.Tx
+	clause Clause
 	// SQL动态参数
 	sqlValues []interface{}
+	// SQL语句
+	sql strings.Builder
 }
 
 // CommonDB is a minimal function set of db
@@ -42,12 +42,10 @@ func New(db *sql.DB) *Session {
 	return &Session{db: db}
 }
 
-
 func (s *Session) Clear() {
 	s.sql.Reset()
 	s.sqlValues = nil
 }
-
 
 func (s *Session) Raw(sql string, values ...interface{}) *Session {
 	s.sql.WriteString(sql)
