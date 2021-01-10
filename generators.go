@@ -5,8 +5,7 @@ import (
 	"strings"
 )
 
-// 该类旨于 完成SQL条件语句构建工作
-
+// 该类旨于 完成关键字SQL语句构建工作
 type generator func(values ...interface{}) (string, []interface{})
 
 var generators map[Type]generator
