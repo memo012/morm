@@ -19,7 +19,7 @@ func TestClause_InsertStruct(t *testing.T) {
 	clause = clause.SetTableName("memo").
 		InsertStruct(user)
 
-//	sql := "INSERT INTO memo (Name,Age) VALUES (?,?)"
+	//	sql := "INSERT INTO memo (Name,Age) VALUES (?,?)"
 
 	log.Info(clause.sql)
 	log.Info(clause.params)

@@ -12,8 +12,9 @@ var generators map[Type]generator
 
 func init() {
 	generators = make(map[Type]generator)
-	generators[INSERT] = _insert
-	generators[VALUES] = _values
+	generators[Insert] = _insert
+	generators[Value] = _values
+	generators[Condition] = _condition
 }
 
 func _insert(values ...interface{}) (string, []interface{}) {
@@ -47,4 +48,16 @@ func _values(values ...interface{}) (string, []interface{}) {
 		vars = append(vars, v...)
 	}
 	return sql.String(), vars
+}
+
+//
+func _condition(values ...interface{}) (string, []interface{}) {
+	var sql strings.Builder
+	sql.WriteString("`")
+	sql.WriteString(values[0].(string))
+	sql.WriteString("`")
+	operation := values[1].(string)
+	sql.WriteString(operation)
+	sql.WriteString("?")
+	return sql.String(), []interface{}{}
 }

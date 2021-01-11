@@ -1,16 +1,20 @@
 package session
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 )
 
 type Type int
 
+type Operation int
+
 type Clause struct {
 	cselect    string
 	cset       string
 	tablename  string
+	condition  string
 	limit      int32
 	offset     int32
 	sql        string
@@ -20,8 +24,18 @@ type Clause struct {
 }
 
 const (
-	INSERT Type = iota
-	VALUES
+	Insert Type = iota
+	Value
+	Condition
+)
+
+const (
+	And Operation = iota
+	Or
+	Lt
+	Lte
+	Gt
+	Gte
 )
 
 // NewClause 初始化
@@ -53,13 +67,17 @@ func (c *Clause) InsertStruct(vars interface{}) *Clause {
 	// 数据映射
 	schema := StructForType(types)
 	// 构建SQL语句
-	c.Set(INSERT, c.tablename, schema.FieldNames)
+	c.Set(Insert, c.tablename, schema.FieldNames)
 	recordValues := make([]interface{}, 0)
 	recordValues = append(recordValues, schema.RecordValues(vars))
-	c.Set(VALUES, recordValues...)
+	c.Set(Value, recordValues...)
 	// SQL语句拼接
-	c.Build(INSERT, VALUES)
+	c.Build(Insert, Value)
 	return c
+}
+
+func (c *Clause) AndEqual(field string, value interface{}) *Clause {
+	return c.SetCondition(Condition, "and", field, "=", value)
 }
 
 // 通过关键字构建sql语句
@@ -67,6 +85,23 @@ func (c *Clause) Set(name Type, param ...interface{}) {
 	sql, vars := generators[name](param...)
 	c.sqlType[name] = sql
 	c.paramsType[name] = vars
+}
+
+// 查询条件组装
+func (c *Clause) SetCondition(values ...interface{}) *Clause {
+	sql, _ := generators[values[0]](values[1:]...)
+	c.params = append(c.params, values[4])
+	c.addCondition(sql, values[1].(string))
+	return c
+}
+
+// 条件组成
+func (c *Clause) addCondition(sql, opt string) {
+	if c.condition == "" {
+		c.condition = sql
+	} else {
+		c.condition = fmt.Sprint("(", c.condition, ")", opt, "(", sql, ")")
+	}
 }
 
 // 拼接各个SQL语句
