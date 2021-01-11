@@ -94,3 +94,12 @@ func (s *Schema) RecordValues(dest interface{}) []interface{} {
 	}
 	return fieldValues
 }
+
+func (s *Schema) UpdateParam(dest interface{}) map[string]interface{} {
+	destValue := reflect.Indirect(reflect.ValueOf(dest))
+	m := make(map[string]interface{})
+	for _, field := range s.Fields {
+		m[field.Name] =  destValue.FieldByName(field.Name).Interface()
+	}
+	return m
+}
