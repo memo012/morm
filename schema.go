@@ -18,9 +18,9 @@ type Filed struct {
 
 // Schema 主要包含被映射的字段(Fields)
 type Schema struct {
-	Fields     []*Filed
-	FieldNames []string
-	FieldMap   map[string]*Filed
+	Fields     []*Filed // 字段属性组合
+	FieldNames []string // 字段名称
+	FieldMap   map[string]*Filed // key:字段名  value：字段属性
 }
 
 var (
