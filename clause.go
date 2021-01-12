@@ -31,6 +31,8 @@ const (
 	Update
 	Delete
 	Limit
+	Select
+	Where
 	Condition
 )
 

@@ -13,7 +13,6 @@ type Session struct {
 	// 数据库引擎
 	db     *sql.DB
 	tx     *sql.Tx
-	clause Clause
 	// SQL动态参数
 	sqlValues []interface{}
 	// SQL语句
@@ -38,7 +37,7 @@ func (s *Session) DB() CommonDB {
 	return s.db
 }
 
-func New(db *sql.DB) *Session {
+func NewClient(db *sql.DB) *Session {
 	return &Session{db: db}
 }
 

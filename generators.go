@@ -18,6 +18,8 @@ func init() {
 	generators[Condition] = _condition
 	generators[Delete] = _delete
 	generators[Limit] = _condition
+	generators[Select] = _select
+	generators[Where] = _select
 }
 
 func _insert(values ...interface{}) (string, []interface{}) {
@@ -82,4 +84,12 @@ func _delete(values ...interface{}) (string, []interface{}) {
 
 func _limit(values ...interface{}) (string, []interface{}) {
 	return "LIMIT ?", values
+}
+
+func _select(values ...interface{}) (string, []interface{}) {
+	return fmt.Sprintf("select %s from %s", values[0], values[1]), []interface{}{}
+}
+
+func _where(values ...interface{}) (string, []interface{}) {
+	return fmt.Sprintf("%s","WHERE"), []interface{}{}
 }
