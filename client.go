@@ -22,13 +22,36 @@ func (s *Session) FindOne(ctx context.Context, statement *Statement, dest interf
 	if reflect.TypeOf(dest).Kind() != reflect.Ptr || reflect.ValueOf(dest).IsNil() {
 		return fmt.Errorf("dest is not a ptr or nil")
 	}
-	v := reflect.TypeOf(dest).Elem()
-	if v.Kind() != reflect.Struct {
+	destSlice := reflect.Indirect(reflect.ValueOf(dest))
+	destType := destSlice.Type().Elem()
+	if destType.Kind() != reflect.Struct {
 		return fmt.Errorf("dest is not a struct")
 	}
 	// 拼接完整SQL语句
 	createFindSQL(statement)
-	return nil
+	// 进行与数据库交互
+	rows, err := s.Raw(statement.clause.sql, statement.clause.params...).Query()
+	if err != nil {
+		return err
+	}
+
+	schema := StructForType(destType)
+
+	for rows.Next() {
+		// 获取指针指向的元素信息
+		dest := reflect.New(destType).Elem()
+		// 结构体字段
+		var values []interface{}
+		for _, name := range schema.FieldNames {
+			values = append(values, dest.FieldByName(name).Addr().Interface())
+		}
+		if err := rows.Scan(values...); err != nil {
+			return err
+		}
+		// 赋值
+		destSlice.Set(reflect.Append(destSlice, dest))
+	}
+	return rows.Close()
 }
 
 // 拼接完整SQL语句
