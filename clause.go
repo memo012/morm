@@ -10,6 +10,8 @@ type Type int
 
 type Operation int
 
+// 条件组装 不外显 便于与用户API分层隔离
+
 type Clause struct {
 	cselect    string
 	cset       string
@@ -33,7 +35,7 @@ const (
 )
 
 // NewClause 初始化
-func NewClause() *Clause {
+func newClause() *Clause {
 	return &Clause{
 		cselect:    "*",
 		limit:      -1,
@@ -50,7 +52,7 @@ func (c *Clause) SetTableName(tableName string) *Clause {
 }
 
 //
-func (c *Clause) InsertStruct(vars interface{}) *Clause {
+func (c *Clause) insertStruct(vars interface{}) *Clause {
 	types := reflect.TypeOf(vars)
 	if types.Kind() == reflect.Ptr {
 		types = types.Elem()
@@ -70,7 +72,7 @@ func (c *Clause) InsertStruct(vars interface{}) *Clause {
 }
 
 //
-func (c *Clause) UpdateStruct(vars interface{}) *Clause {
+func (c *Clause) updateStruct(vars interface{}) *Clause {
 	types := reflect.TypeOf(vars)
 	if types.Kind() == reflect.Ptr {
 		types = types.Elem()
@@ -87,12 +89,12 @@ func (c *Clause) UpdateStruct(vars interface{}) *Clause {
 	return c
 }
 
-func (c *Clause) AndEqual(field string, value interface{}) *Clause {
-	return c.SetCondition(Condition, "AND", field, "=", value)
+func (c *Clause) andEqual(field string, value interface{}) *Clause {
+	return c.setCondition(Condition, "AND", field, "=", value)
 }
 
-func (c *Clause) OrEqual(field string, value interface{}) *Clause {
-	return c.SetCondition(Condition, "OR", field, "=", value)
+func (c *Clause) orEqual(field string, value interface{}) *Clause {
+	return c.setCondition(Condition, "OR", field, "=", value)
 }
 
 // 通过关键字构建sql语句
@@ -103,7 +105,7 @@ func (c *Clause) Set(name Type, param ...interface{}) {
 }
 
 // 查询条件组装
-func (c *Clause) SetCondition(values ...interface{}) *Clause {
+func (c *Clause) setCondition(values ...interface{}) *Clause {
 	sql, vars := generators[values[0].(Type)](values[2:]...)
 	c.params = append(c.params, vars...)
 	c.addCondition(sql, values[1].(string))
