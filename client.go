@@ -57,13 +57,52 @@ func (s *Session) FindOne(ctx context.Context, statement *Statement, dest interf
 	return rows.Close()
 }
 
-// 拼接完整SQL语句
+// 删除操作 API
+func (s *Session) Delete(ctx context.Context, statement *Statement) (int64, error) {
+	createDeleteSQL(statement)
+	res, err := s.Raw(statement.clause.sql, statement.clause.params).Exec()
+	if err != nil {
+		return 0, err
+	}
+	return res.RowsAffected()
+}
+
+
+// 	更新操作 API
+func (s *Session) Update(ctx context.Context, statement *Statement) (int64, error) {
+	createUpdateSQL(statement)
+	res, err := s.Raw(statement.clause.sql, statement.clause.params).Exec()
+	if err != nil {
+		return 0, err
+	}
+	return res.RowsAffected()
+}
+
+func createUpdateSQL(statement *Statement) {
+	statement.clause.Set(Update, statement.clause.tablename)
+	createConditionSQL(statement)
+	statement.clause.Build(Update, Where, Condition)
+}
+
+func createDeleteSQL(statement *Statement) {
+	statement.clause.Set(Delete, statement.clause.tablename)
+	createConditionSQL(statement)
+	statement.clause.Build(Delete, Where, Condition)
+}
+
 func createFindSQL(statement *Statement) {
 	statement.clause.Set(Select, statement.clause.cselect, statement.clause.tablename)
+	createConditionSQL(statement)
+	statement.clause.Build(Select, Where, Condition)
+}
+
+// 拼接完整SQL语句
+func createConditionSQL(statement *Statement) {
 	if statement.clause.condition != "" {
 		statement.clause.Set(Where, "where")
 		log.Info(statement.clause.sql)
 		statement.clause.SetCondition(Condition, statement.clause.condition, statement.clause.params)
 	}
-	statement.clause.Build(Select, Where, Condition)
 }
+
+
