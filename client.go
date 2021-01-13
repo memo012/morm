@@ -31,6 +31,7 @@ func (s *Session) FindOne(ctx context.Context, statement *Statement, dest interf
 
 	// 拼接完整SQL语句
 	createFindSQL(statement)
+
 	// 进行与数据库交互
 	rows, err := s.Raw(statement.clause.sql, statement.clause.params...).Query()
 	if err != nil {
@@ -60,7 +61,8 @@ func (s *Session) FindOne(ctx context.Context, statement *Statement, dest interf
 // 删除操作 API
 func (s *Session) Delete(ctx context.Context, statement *Statement) (int64, error) {
 	createDeleteSQL(statement)
-	res, err := s.Raw(statement.clause.sql, statement.clause.params).Exec()
+	log.Info(statement.clause.params)
+	res, err := s.Raw(statement.clause.sql, statement.clause.params...).Exec()
 	if err != nil {
 		return 0, err
 	}
@@ -71,7 +73,8 @@ func (s *Session) Delete(ctx context.Context, statement *Statement) (int64, erro
 // 	更新操作 API
 func (s *Session) Update(ctx context.Context, statement *Statement) (int64, error) {
 	createUpdateSQL(statement)
-	res, err := s.Raw(statement.clause.sql, statement.clause.params).Exec()
+	log.Info(statement.clause.params)
+	res, err := s.Raw(statement.clause.sql, statement.clause.params...).Exec()
 	if err != nil {
 		return 0, err
 	}
@@ -79,7 +82,6 @@ func (s *Session) Update(ctx context.Context, statement *Statement) (int64, erro
 }
 
 func createUpdateSQL(statement *Statement) {
-	statement.clause.Set(Update, statement.clause.tablename)
 	createConditionSQL(statement)
 	statement.clause.Build(Update, Where, Condition)
 }
@@ -100,7 +102,6 @@ func createFindSQL(statement *Statement) {
 func createConditionSQL(statement *Statement) {
 	if statement.clause.condition != "" {
 		statement.clause.Set(Where, "where")
-		log.Info(statement.clause.sql)
 		statement.clause.SetCondition(Condition, statement.clause.condition, statement.clause.params)
 	}
 }

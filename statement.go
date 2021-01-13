@@ -41,3 +41,9 @@ func (s *Statement) OrEqual(field string, value interface{}) *Statement {
 	 s.clause.orEqual(field, value)
 	 return s
 }
+
+// Select
+func (s *Statement) Select(field ...string) *Statement {
+	s.clause.selectField(field...)
+	return s
+}

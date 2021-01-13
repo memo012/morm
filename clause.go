@@ -99,6 +99,11 @@ func (c *Clause) orEqual(field string, value interface{}) *Clause {
 	return c.setCondition(Condition, "OR", field, "=", value)
 }
 
+func (c *Clause) selectField(cselect ...string) *Clause {
+	c.cselect = strings.Join(cselect, ",")
+	return c
+}
+
 // 通过关键字构建sql语句
 func (c *Clause) Set(name Type, param ...interface{}) {
 	sql, vars := generators[name](param...)

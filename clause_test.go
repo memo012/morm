@@ -28,9 +28,11 @@ func TestClause_Condition(t *testing.T) {
 	clause := newClause()
 	clause = clause.SetTableName("memo").
 		andEqual("name", "迈莫coding").
-		orEqual("age", 5)
+		orEqual("age", 5).
+		selectField("name,age")
 	log.Info(clause.condition)
 	log.Info(clause.params)
+	log.Info(clause.cselect)
 }
 
 func TestClause_UpdateStruct(t *testing.T) {
