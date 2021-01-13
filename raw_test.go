@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 
 
 func NewSession() *Session {
-	return New(db)
+	return NewClient(db)
 }
 
 func TestSession_QueryRow(t *testing.T) {

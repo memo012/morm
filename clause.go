@@ -106,6 +106,11 @@ func (c *Clause) Set(name Type, param ...interface{}) {
 	c.paramsType[name] = vars
 }
 
+func (c *Clause) SetCondition(name Type, sql string, vars []interface{}) {
+	c.sqlType[name] = sql
+	c.paramsType[name] = vars
+}
+
 // 查询条件组装
 func (c *Clause) setCondition(values ...interface{}) *Clause {
 	sql, vars := generators[values[0].(Type)](values[2:]...)

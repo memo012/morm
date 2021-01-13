@@ -19,7 +19,7 @@ func init() {
 	generators[Delete] = _delete
 	generators[Limit] = _condition
 	generators[Select] = _select
-	generators[Where] = _select
+	generators[Where] = _where
 }
 
 func _insert(values ...interface{}) (string, []interface{}) {

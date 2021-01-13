@@ -3,6 +3,7 @@ package session
 import (
 	"context"
 	"fmt"
+	"github.com/memo012/morm/log"
 	"reflect"
 )
 
@@ -23,10 +24,11 @@ func (s *Session) FindOne(ctx context.Context, statement *Statement, dest interf
 		return fmt.Errorf("dest is not a ptr or nil")
 	}
 	destSlice := reflect.Indirect(reflect.ValueOf(dest))
-	destType := destSlice.Type().Elem()
-	if destType.Kind() != reflect.Struct {
+	destValue := reflect.ValueOf(dest).Elem()
+	if destValue.Kind() != reflect.Struct {
 		return fmt.Errorf("dest is not a struct")
 	}
+
 	// 拼接完整SQL语句
 	createFindSQL(statement)
 	// 进行与数据库交互
@@ -35,6 +37,7 @@ func (s *Session) FindOne(ctx context.Context, statement *Statement, dest interf
 		return err
 	}
 
+	destType := reflect.TypeOf(dest).Elem()
 	schema := StructForType(destType)
 
 	for rows.Next() {
@@ -59,6 +62,8 @@ func createFindSQL(statement *Statement) {
 	statement.clause.Set(Select, statement.clause.cselect, statement.clause.tablename)
 	if statement.clause.condition != "" {
 		statement.clause.Set(Where, "where")
+		log.Info(statement.clause.sql)
+		statement.clause.SetCondition(Condition, statement.clause.condition, statement.clause.params)
 	}
 	statement.clause.Build(Select, Where, Condition)
 }
