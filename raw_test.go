@@ -2,9 +2,10 @@ package session
 
 import (
 	"database/sql"
-	"github.com/memo012/morm/log"
 	"os"
 	"testing"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var db *sql.DB
@@ -15,7 +16,6 @@ func TestMain(m *testing.M) {
 	_ = db.Close()
 	os.Exit(code)
 }
-
 
 func New() *Session {
 	return NewClient(db)
