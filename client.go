@@ -33,14 +33,47 @@ func (s *Session) FindOne(ctx context.Context, statement *Statement, dest interf
 	createFindSQL(statement)
 
 	// 进行与数据库交互
+	rows := s.Raw(statement.clause.sql, statement.clause.params...).QueryRow()
+
+	destType := reflect.TypeOf(dest).Elem()
+	schema := StructForType(destType)
+	// 获取指针指向的元素信息
+	destVal := reflect.New(destType).Elem()
+	// 结构体字段
+	var values []interface{}
+	for _, name := range schema.FieldNames {
+		values = append(values, destVal.FieldByName(name).Addr().Interface())
+	}
+	if err := rows.Scan(values...); err != nil {
+		log.Info(err)
+		return err
+	}
+	destSlice.Set(destVal)
+	return nil
+}
+
+func (s *Session) FindAll(ctx context.Context, statement *Statement, dest interface{}) (err error) {
+	log.Info(reflect.TypeOf(dest).Kind())
+	if reflect.TypeOf(dest).Kind() != reflect.Ptr || reflect.ValueOf(dest).IsNil() {
+		return fmt.Errorf("dest is not a ptr or nil")
+	}
+	destSlice := reflect.ValueOf(dest).Elem()
+	destType := destSlice.Type().Elem()
+
+	// 拼接完整SQL语句
+	createFindSQL(statement)
+
+	// 进行与数据库交互
 	rows, err := s.Raw(statement.clause.sql, statement.clause.params...).Query()
 	if err != nil {
 		return err
 	}
 
-	destType := reflect.TypeOf(dest).Elem()
-	schema := StructForType(destType)
+	if destType.Kind() == reflect.Ptr {
+		destType = destType.Elem()
+	}
 
+	schema := StructForType(destType)
 	for rows.Next() {
 		// 获取指针指向的元素信息
 		dest := reflect.New(destType).Elem()
@@ -55,7 +88,7 @@ func (s *Session) FindOne(ctx context.Context, statement *Statement, dest interf
 		// 赋值
 		destSlice.Set(reflect.Append(destSlice, dest))
 	}
-	return rows.Close()
+	return nil
 }
 
 // 删除操作 API

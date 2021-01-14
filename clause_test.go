@@ -6,7 +6,7 @@ import (
 )
 
 type Users struct {
-	Name string `torm:"name,varchar"`
+	Name string `torm:"user_name,varchar"`
 	Age  int    `torm:"age,int"`
 }
 

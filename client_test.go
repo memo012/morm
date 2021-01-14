@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"github.com/memo012/morm/log"
 	"testing"
 )
 
@@ -13,18 +14,29 @@ func TestSession_Insert(t *testing.T) {
 	statement := NewStatement()
 	statement = statement.SetTableName("memo").
 		InsertStruct(user)
-	client := NewClient(nil)
+	client := New()
 	client.Insert(context.Background(), statement)
 }
 
 func TestSession_FindOne(t *testing.T) {
 	statement := NewStatement()
-	statement = statement.SetTableName("memo").
-		AndEqual("name", "迈莫coding").
-		OrEqual("age", 2).
-		Select("name,age")
-	client := NewClient(nil)
-	client.FindOne(context.Background(), statement, &User{})
+	statement = statement.SetTableName("user").
+		AndEqual("user_name", "迈莫").
+		Select("user_name,age")
+	client := New()
+	user := &User{}
+	_ = client.FindOne(context.Background(), statement, user)
+	log.Info(user)
+}
+
+func TestSession_FindAll(t *testing.T) {
+	statement := NewStatement()
+	statement = statement.SetTableName("user").
+		Select("user_name,age")
+	client := New()
+	var user []User
+	_ = client.FindAll(context.Background(), statement, &user)
+	log.Info(user)
 }
 
 func TestSession_Delete(t *testing.T) {
@@ -37,13 +49,13 @@ func TestSession_Delete(t *testing.T) {
 
 func TestSession_Update(t *testing.T) {
 	user := &Users{
-		Name: "迈莫coding",
+		Name: "迈莫",
 		Age:  1,
 	}
 	statement := NewStatement()
-	statement = statement.SetTableName("memo").
+	statement = statement.SetTableName("user").
 		UpdateStruct(user).
-		AndEqual("name", "迈莫")
-	client := NewClient(nil)
+		AndEqual("user_name", "迈莫")
+	client := New()
 	client.Update(context.Background(), statement)
 }
