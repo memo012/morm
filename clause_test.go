@@ -1,7 +1,7 @@
 package session
 
 import (
-	"github.com/memo012/morm/log"
+	log "github.com/sirupsen/logrus"
 	"testing"
 )
 

@@ -2,7 +2,7 @@ package session
 
 import (
 	"context"
-	"github.com/memo012/morm/log"
+	log "github.com/sirupsen/logrus"
 	"testing"
 )
 
@@ -43,7 +43,7 @@ func TestSession_Delete(t *testing.T) {
 	statement := NewStatement()
 	statement = statement.SetTableName("memo").
 		AndEqual("name", "迈莫coding")
-	client := NewClient(nil)
+	client := NewSession(nil)
 	client.Delete(context.Background(), statement)
 }
 

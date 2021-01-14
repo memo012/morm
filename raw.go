@@ -3,12 +3,11 @@ package session
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/memo012/morm/log"
+	log "github.com/sirupsen/logrus"
 	"strings"
 )
 
 // session类 旨于与数据库进行交互
-
 type Session struct {
 	// 数据库引擎
 	db     *sql.DB
@@ -37,7 +36,7 @@ func (s *Session) DB() CommonDB {
 	return s.db
 }
 
-func NewClient(db *sql.DB) *Session {
+func NewSession(db *sql.DB) *Session {
 	return &Session{db: db}
 }
 

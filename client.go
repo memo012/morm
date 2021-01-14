@@ -3,7 +3,7 @@ package session
 import (
 	"context"
 	"fmt"
-	"github.com/memo012/morm/log"
+	log "github.com/sirupsen/logrus"
 	"reflect"
 )
 
