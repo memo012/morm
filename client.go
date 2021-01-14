@@ -2,16 +2,60 @@ package session
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"reflect"
 )
 
+
+type Settings struct {
+	DriverName      string
+	User            string
+	Password        string
+	Database        string
+	Host            string
+	Options         map[string]string
+	MaxOpenConns    int
+	MaxIdleConns    int
+	LoggingEnabled  bool
+}
+
+type Client struct{
+	session Session
+}
+
+func (s *Settings) DataSourceName() string {
+	queryString := ""
+	for key, value := range s.Options {
+		queryString += key + "=" + value + "&"
+	}
+	ustr := fmt.Sprintf("%s:%s@tcp(%s)/%s?%s", s.User, s.Password, s.Host, s.Database, queryString)
+
+	return ustr
+}
+
+func NewClient(settings Settings) (s *Session, err error) {
+	db, err := sql.Open(settings.DriverName, settings.DataSourceName())
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	// Send a ping to make sure the database connection is alive.
+	if err = db.Ping(); err != nil {
+		log.Error(err)
+		return
+	}
+	s = NewSession(db)
+	log.Info("Connect database success")
+	return
+}
+
 // 新增数据API
-func (s *Session) Insert(ctx context.Context, statement *Statement) (int64, error) {
+func (s *Client) Insert(ctx context.Context, statement *Statement) (int64, error) {
 	sql := statement.clause.sql
 	vars := statement.clause.params
-	result, err := s.Raw(sql, vars...).Exec()
+	result, err := s.session.Raw(sql, vars...).Exec()
 	if err != nil {
 		return 0, err
 	}
@@ -19,7 +63,7 @@ func (s *Session) Insert(ctx context.Context, statement *Statement) (int64, erro
 }
 
 // 查询语句API
-func (s *Session) FindOne(ctx context.Context, statement *Statement, dest interface{}) (err error) {
+func (s *Client) FindOne(ctx context.Context, statement *Statement, dest interface{}) (err error) {
 	if reflect.TypeOf(dest).Kind() != reflect.Ptr || reflect.ValueOf(dest).IsNil() {
 		return fmt.Errorf("dest is not a ptr or nil")
 	}
@@ -33,7 +77,7 @@ func (s *Session) FindOne(ctx context.Context, statement *Statement, dest interf
 	createFindSQL(statement)
 
 	// 进行与数据库交互
-	rows := s.Raw(statement.clause.sql, statement.clause.params...).QueryRow()
+	rows := s.session.Raw(statement.clause.sql, statement.clause.params...).QueryRow()
 
 	destType := reflect.TypeOf(dest).Elem()
 	schema := StructForType(destType)
@@ -52,7 +96,7 @@ func (s *Session) FindOne(ctx context.Context, statement *Statement, dest interf
 	return nil
 }
 
-func (s *Session) FindAll(ctx context.Context, statement *Statement, dest interface{}) (err error) {
+func (s *Client) FindAll(ctx context.Context, statement *Statement, dest interface{}) (err error) {
 	log.Info(reflect.TypeOf(dest).Kind())
 	if reflect.TypeOf(dest).Kind() != reflect.Ptr || reflect.ValueOf(dest).IsNil() {
 		return fmt.Errorf("dest is not a ptr or nil")
@@ -64,7 +108,7 @@ func (s *Session) FindAll(ctx context.Context, statement *Statement, dest interf
 	createFindSQL(statement)
 
 	// 进行与数据库交互
-	rows, err := s.Raw(statement.clause.sql, statement.clause.params...).Query()
+	rows, err := s.session.Raw(statement.clause.sql, statement.clause.params...).Query()
 	if err != nil {
 		return err
 	}
@@ -92,10 +136,10 @@ func (s *Session) FindAll(ctx context.Context, statement *Statement, dest interf
 }
 
 // 删除操作 API
-func (s *Session) Delete(ctx context.Context, statement *Statement) (int64, error) {
+func (s *Client) Delete(ctx context.Context, statement *Statement) (int64, error) {
 	createDeleteSQL(statement)
 	log.Info(statement.clause.params)
-	res, err := s.Raw(statement.clause.sql, statement.clause.params...).Exec()
+	res, err := s.session.Raw(statement.clause.sql, statement.clause.params...).Exec()
 	if err != nil {
 		return 0, err
 	}
@@ -104,10 +148,10 @@ func (s *Session) Delete(ctx context.Context, statement *Statement) (int64, erro
 
 
 // 	更新操作 API
-func (s *Session) Update(ctx context.Context, statement *Statement) (int64, error) {
+func (s *Client) Update(ctx context.Context, statement *Statement) (int64, error) {
 	createUpdateSQL(statement)
 	log.Info(statement.clause.params)
-	res, err := s.Raw(statement.clause.sql, statement.clause.params...).Exec()
+	res, err := s.session.Raw(statement.clause.sql, statement.clause.params...).Exec()
 	if err != nil {
 		return 0, err
 	}
