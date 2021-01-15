@@ -24,11 +24,14 @@ type Schema struct {
 }
 
 var (
+
 	structMutex sync.RWMutex
 	structCache = make(map[reflect.Type]*Schema)
 )
 
+// 对象与表结构转换
 func StructForType(t reflect.Type) *Schema {
+	// step1: 缓存获取
 	structMutex.RLock()
 	st, found := structCache[t]
 	structMutex.RUnlock()
@@ -42,13 +45,16 @@ func StructForType(t reflect.Type) *Schema {
 	if found {
 		return st
 	}
-
+	// step2: 对象关系映射
 	st = &Schema{FieldMap: make(map[string]*Filed)}
 	dataTypeOf(t, st)
+
+	// step3: 缓存
 	structCache[t] = st
 	return st
 }
 
+// 对象与表结构转换(实际工作函数)
 func dataTypeOf(types reflect.Type, schema *Schema) {
 	// 遍历所有字段
 	for i := 0; i < types.NumField(); i++ {
@@ -66,22 +72,25 @@ func dataTypeOf(types reflect.Type, schema *Schema) {
 		if tg, ok := p.Tag.Lookup("torm"); ok {
 			tag = tg
 		}
-
+		// 获得额外约束条件
 		tagArr := strings.Split(tag, ",")
 		if len(tagArr) > 0 {
 			if tagArr[0] == "-" {
 				continue
 			}
+			// 数据库中对应列表名称
 			if len(tagArr[0]) > 0 {
 				field.TableColumn = tagArr[0]
 			}
+			// 数据库中对应列表类型
 			if len(tagArr) > 1 && len(tagArr[1]) > 0 {
 				field.Type = tagArr[1]
 			}
 		}
-
+		// 存储所有字段信息
 		schema.Fields = append(schema.Fields, field)
 		schema.FieldMap[p.Name] = field
+		// 存储所有字段名称
 		schema.FieldNames = append(schema.FieldNames, p.Name)
 	}
 }
