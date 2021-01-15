@@ -4,25 +4,26 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
-
 type Settings struct {
-	DriverName      string
-	User            string
-	Password        string
-	Database        string
-	Host            string
-	Options         map[string]string
-	MaxOpenConns    int
-	MaxIdleConns    int
-	LoggingEnabled  bool
+	DriverName     string
+	User           string
+	Password       string
+	Database       string
+	Host           string
+	Options        map[string]string
+	MaxOpenConns   int
+	MaxIdleConns   int
+	LoggingEnabled bool
 }
 
-type Client struct{
-	session Session
+type Client struct {
+	db      *sql.DB
+	session *Session
 }
 
 func (s *Settings) DataSourceName() string {
@@ -35,7 +36,7 @@ func (s *Settings) DataSourceName() string {
 	return ustr
 }
 
-func NewClient(settings Settings) (s *Session, err error) {
+func NewClient(settings Settings) (c *Client, err error) {
 	db, err := sql.Open(settings.DriverName, settings.DataSourceName())
 	if err != nil {
 		log.Error(err)
@@ -46,9 +47,17 @@ func NewClient(settings Settings) (s *Session, err error) {
 		log.Error(err)
 		return
 	}
-	s = NewSession(db)
+	c = &Client{db: db}
+	c.session = NewSession(db)
 	log.Info("Connect database success")
 	return
+}
+
+func (c *Client) Close() {
+	if err := c.db.Close(); err != nil {
+		log.Error("Failed to close database")
+	}
+	log.Info("Close database success")
 }
 
 // 新增数据API
@@ -146,7 +155,6 @@ func (s *Client) Delete(ctx context.Context, statement *Statement) (int64, error
 	return res.RowsAffected()
 }
 
-
 // 	更新操作 API
 func (s *Client) Update(ctx context.Context, statement *Statement) (int64, error) {
 	createUpdateSQL(statement)
@@ -182,5 +190,3 @@ func createConditionSQL(statement *Statement) {
 		statement.clause.SetCondition(Condition, statement.clause.condition, statement.clause.params)
 	}
 }
-
-

@@ -37,7 +37,7 @@ func TestSession_QueryRow(t *testing.T) {
 func TestSession_Exec(t *testing.T) {
 	s := New()
 	key := "迈莫"
-	s = s.Raw("insert into user(user_name, age) values(?, ?)", key, 22)
+	s = s.Raw("insert into user(user_name, age) values(?, ?)", key, 21)
 	_, err := s.Exec()
 	if err != nil {
 		t.Fatal("failed to insert db", err)
