@@ -192,3 +192,4 @@ func TestSession_Update(t *testing.T) {
 }
 ```
 
+> 文章也会持续更新，可以微信搜索「 迈莫coding 」第一时间阅读，回复『1024』领取学习go资料。
