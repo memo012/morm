@@ -76,3 +76,23 @@ func TestSession_Update(t *testing.T) {
 	client, _ := Newclient()
 	client.Update(context.Background(), statement)
 }
+
+func TestClient_Transaction(t *testing.T) {
+	user := &Users{
+		Name: "迈莫",
+		Age:  1,
+	}
+	client, _ := Newclient()
+	statement := NewStatement()
+	statement = statement.SetTableName("user").
+		AndEqual("age", 21).Select("user_name,age")
+	res, err := client.Transaction(func(ctx context.Context, client2 *Client) (interface{}, error) {
+		err := client2.FindOne(ctx, statement, user)
+		return user, err
+	})
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	log.Info(res)
+}

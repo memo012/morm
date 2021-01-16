@@ -13,16 +13,16 @@ type Operation int
 // 条件组装 不外显 便于与用户API分层隔离
 
 type Clause struct {
-	cselect    string
-	cset       string
-	tablename  string
-	condition  string
+	cselect    string // 查询字段
+	cset       string // 修改字段
+	tablename  string // 表名
+	condition  string // 查询条件
 	limit      int32
 	offset     int32
-	sql        string
-	params     []interface{}
-	sqlType    map[Type]string
-	paramsType map[Type][]interface{}
+	sql        string                 // 完整sql语句
+	params     []interface{}          // 参数
+	sqlType    map[Type]string        // key:关键词   values:关键词sql语句
+	paramsType map[Type][]interface{} // key:关键词  values:关键词sql语句
 }
 
 const (

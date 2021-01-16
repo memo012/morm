@@ -166,6 +166,26 @@ func (s *Client) Update(ctx context.Context, statement *Statement) (int64, error
 	return res.RowsAffected()
 }
 
+type TxFunc func(ctx context.Context, client *Client) (interface{}, error)
+
+// 支持事务
+func (c *Client) Transaction(f TxFunc) (result interface{}, err error) {
+	if err := c.session.Begin(); err != nil {
+		return nil, err
+	}
+	defer func() {
+		if p := recover(); p != nil {
+			_ = c.session.Rollback()
+			panic(p)
+		} else if err != nil {
+			_ = c.session.Rollback()
+		} else {
+			err = c.session.Commit()
+		}
+	}()
+	return f(context.Background(), c)
+}
+
 func createUpdateSQL(statement *Statement) {
 	createConditionSQL(statement)
 	statement.clause.Build(Update, Where, Condition)
