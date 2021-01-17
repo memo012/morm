@@ -1,3 +1,15 @@
+# 七天教程规划
+
+接下来我会将TORM框架的设计原理分为七天来讲述，每天完成其中一个模块，七天形成orm框架基础模型，下面所看到的就是我分为七天的实现功能，如下所示：
+
+- Day01: 序言
+- Day02: database/sql基础
+- Day03: 对象表结构映射
+- Day04: 条件组件库
+- Day05: 条件组件API
+- Day06: 用户CRUD操作API
+- Day07: 支持事务
+
 # TORM框架
 ![TORM标题](https://img-blog.csdnimg.cn/20210115212316910.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQxMDY2MDY2,size_16,color_FFFFFF,t_70#pic_center)
 
@@ -45,6 +57,7 @@ TORM为对象-关系映射(Object-Relational Mapping，简称ORM)框架 ，是�
 - 用最少的代码来实现一款ORM框架
 - 通过TORM进而理解ORM实现原理
 - 去了解框架设计的奥妙
+
 
 # 代码实现过程
 >关注【迈莫coding】，查看TORM实现过程文章，代码+文章+视频
