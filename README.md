@@ -2,7 +2,7 @@
 
 接下来我会将TORM框架的设计原理分为七天来讲述，每天完成其中一个模块，七天形成orm框架基础模型，下面所看到的就是我分为七天的实现功能，如下所示：
 
-- Day01: 序言
+- Day01: [序言](https://mp.weixin.qq.com/s/qJB2OHg6AQ8GuZ0ZgN6dVA)
 - Day02: database/sql基础
 - Day03: 对象表结构映射
 - Day04: 条件组件库
